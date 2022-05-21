@@ -1,12 +1,19 @@
 package com.jjbeto.microservice.iplocator.controller;
 
+import com.jjbeto.microservice.iplocator.client.IpApiClient;
+import com.jjbeto.microservice.iplocator.dto.IpApiResponseDto;
+import com.jjbeto.microservice.iplocator.service.IpApiService;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
 
 @SpringBootTest
 class IpLocatorControllerTest {
@@ -14,28 +21,43 @@ class IpLocatorControllerTest {
     @Autowired
     IpLocatorController controller;
 
+    @MockBean
+    IpApiClient ipApiClient;
+
+    @InjectMocks
+    IpApiService service;
+
+    @Value("${feign.client.ip-api.fields}")
+    String fields;
+
+    String canadianIp = "24.48.0.1";
+
+    String germanIp = "18.184.45.226";
+
+    String reservedIp = "0.0.0.0";
+
     @Test
     void findCanadianDollarForCanadianIP() {
-        String currency = controller.getCurrency("24.48.0.1"); // ip from Canada
+        when(ipApiClient.getFromJsonByIp(canadianIp, fields)).thenReturn(new IpApiResponseDto("success", "", "CA", "CAD"));
+
+        String currency = controller.getCurrency(canadianIp);
         assertEquals("CAD", currency);
     }
 
     @Test
     void findEuroForGermanIP() {
-        String currency = controller.getCurrency("18.184.45.226"); // ip from Germany
+        when(ipApiClient.getFromJsonByIp(germanIp, fields)).thenReturn(new IpApiResponseDto("success", "", "DE", "EUR"));
+
+        String currency = controller.getCurrency(germanIp); // ip from Germany
         assertEquals("EUR", currency);
     }
 
     @Test
     void returnEuroAsDefaultIfIpNotFound() {
-        String currency = controller.getCurrency("0.0.0.0"); // 0.0.0.0 is reserved
-        assertEquals("EUR", currency);
-    }
+        when(ipApiClient.getFromJsonByIp(reservedIp, fields)).thenReturn(new IpApiResponseDto("fail", "reserved ip", null, null));
 
-    @Test
-    void returnErrorIfInvalidDataIsGiven() {
-        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class, () -> controller.getCurrency("hallo!"));
-        assertEquals("Input 'hallo!' is not a valid IP", thrown.getMessage());
+        String currency = controller.getCurrency(reservedIp);
+        assertEquals("EUR", currency);
     }
 
     @Test
