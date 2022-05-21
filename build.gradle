@@ -3,6 +3,7 @@ plugins {
 	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 	id 'java'
 	id 'jvm-test-suite' // https://docs.gradle.org/current/userguide/jvm_test_suite_plugin.html
+	id 'com.gorylenko.gradle-git-properties' version '2.4.1' // https://github.com/n0mer/gradle-git-properties
 }
 
 group = 'com.jjbeto.microservice'
@@ -17,6 +18,13 @@ repositories {
 
 ext {
 	set('springCloudVersion', "2021.0.3-SNAPSHOT")
+}
+
+springBoot {
+	buildInfo()
+}
+gitProperties {
+	keys = ['git.commit.id', 'git.branch']
 }
 
 testing {
@@ -37,6 +45,7 @@ tasks.named('check') {
 dependencies {
 	implementation 'org.hibernate.validator:hibernate-validator:7.0.4.Final'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
