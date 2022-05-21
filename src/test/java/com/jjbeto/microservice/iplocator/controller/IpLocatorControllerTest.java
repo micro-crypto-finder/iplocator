@@ -10,7 +10,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
+import javax.cache.CacheManager;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
@@ -20,6 +22,9 @@ class IpLocatorControllerTest {
 
     @Autowired
     IpLocatorController controller;
+
+    @Autowired
+    CacheManager cacheManager;
 
     @MockBean
     IpApiClient ipApiClient;
@@ -35,6 +40,8 @@ class IpLocatorControllerTest {
     String germanIp = "18.184.45.226";
 
     String reservedIp = "0.0.0.0";
+
+    String cloudFlareIp = "1.1.1.1";
 
     @Test
     void findCanadianDollarForCanadianIP() {
@@ -58,6 +65,15 @@ class IpLocatorControllerTest {
 
         String currency = controller.getCurrency(reservedIp);
         assertEquals("EUR", currency);
+    }
+
+    @Test
+    void checkIfCacheIsExecuted() {
+        when(ipApiClient.getFromJsonByIp(cloudFlareIp, fields)).thenReturn(new IpApiResponseDto("success", "", "AU", "AUD"));
+        String currency = controller.getCurrency(cloudFlareIp);
+
+        Optional<String> cached = getCachedCurrency(cloudFlareIp);
+        assertEquals(currency, cached.get());
     }
 
     @Test
@@ -116,6 +132,11 @@ class IpLocatorControllerTest {
         for (String ip : listOfIps) {
             assertFalse(ip.matches(IpLocatorController.VALID_IP), "IP '%s' is valid".formatted(ip));
         }
+    }
+
+    private Optional<String> getCachedCurrency(String ip) {
+        return Optional.ofNullable(cacheManager.getCache("IpApiService.getCurrency"))
+                .map(c -> c.get(ip).toString());
     }
 
 }
