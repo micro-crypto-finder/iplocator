@@ -4,6 +4,7 @@ plugins {
 	id 'java'
 	id 'jvm-test-suite' // https://docs.gradle.org/current/userguide/jvm_test_suite_plugin.html
 	id 'com.gorylenko.gradle-git-properties' version '2.4.1' // https://github.com/n0mer/gradle-git-properties
+	id 'com.google.cloud.tools.jib' version '3.2.1'
 }
 
 group = 'com.jjbeto.microservice'
@@ -61,4 +62,29 @@ dependencyManagement {
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+
+jib {
+	from {
+		image = 'openjdk:17-alpine'
+	}
+	to {
+		image = 'jjbeto/micro-crypto-finder-iplocator'
+		tags = project.provider{[version, 'latest']}
+		auth {
+			username = "$System.env.REGISTRY_LOGIN"
+			password = "$System.env.REGISTRY_PASSWORD"
+		}
+	}
+	container {
+		jvmFlags = ['-Xms512m']
+		mainClass = 'com.jjbeto.microservice.iplocator.IpLocatorApplication'
+		ports = ['8080']
+		environment = [
+				SPRING_OUTPUT_ANSI_ENABLED: 'ALWAYS'
+		]
+		creationTime = "USE_CURRENT_TIMESTAMP"
+		user = 1000
+		format = 'OCI'
+	}
 }

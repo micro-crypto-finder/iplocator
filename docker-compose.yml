@@ -1,0 +1,14 @@
+version: '3.8'
+services:
+  micro-crypto-finder-iplocator:
+    image: jjbeto/micro-crypto-finder-iplocator
+    environment:
+      - MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=health,info
+      - CACHE_CONFIG_POOL_HEAP=true
+      - CACHE_CONFIG_POOL_SIZE=10000
+      - CACHE_CONFIG_POOL_TTL_IN_SEC=600
+      - FEIGN_CLIENT_IP_API_FIELDS=status,message,countryCode,currency
+      - FEIGN_CLIENT_IP_API_FALLBACK_CURRENCY=EUR
+      - LOG_GENERAL_LEVEL=info
+    ports:
+      - '8080:8080'
