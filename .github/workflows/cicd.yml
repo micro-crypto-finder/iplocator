@@ -25,7 +25,7 @@ jobs:
         name: Gradle - Build
         uses: gradle/gradle-build-action@0d13054264b0bb894ded474f08ebb30921341cee
         with:
-          arguments: build -x test
+          arguments: build -x test -x integrationTest
       -
         name: Gradle - Test
         uses: gradle/gradle-build-action@0d13054264b0bb894ded474f08ebb30921341cee
@@ -44,5 +44,8 @@ jobs:
       -
         name: Docker image - Push
         uses: gradle/gradle-build-action@0d13054264b0bb894ded474f08ebb30921341cee
+        env:
+          REGISTRY_LOGIN: ${{ secrets.REGISTRY_LOGIN }}
+          REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
         with:
           arguments: jib
