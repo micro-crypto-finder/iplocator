@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class IpApiService {
 
+    public static final String CACHE_IP_CURRENCY = "IpApiService.getCurrency";
+
     private static final Logger LOGGER = LoggerFactory.getLogger(IpApiService.class);
 
     private final IpApiClient ipApiClient;
@@ -29,7 +31,7 @@ public class IpApiService {
         this.fallbackCurrency = fallbackCurrency;
     }
 
-    @Cacheable(value = "IpApiService.getCurrency")
+    @Cacheable(CACHE_IP_CURRENCY)
     public String getCurrency(final String ip) {
         final IpApiResponseDto dto = ipApiClient.getFromJsonByIp(ip, fields);
         if (dto == null || dto.getCurrency() == null) {
