@@ -49,3 +49,10 @@ jobs:
           REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
         with:
           arguments: jib
+      -
+        name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: app.zip
+          path: build/libs
+          retention-days: 7
